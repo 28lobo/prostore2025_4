@@ -17,7 +17,7 @@ const ProductCard = ({ product }: {product: any}) => {
                     {product.brand}
                 </div>
                 <Link href={`/product/${product.slug}`}>
-                    <h2 className="text-sm font-md">{product.name}</h2>
+                    <h2 className="text-sm font-md">{product.name}</h2> 
                 </Link>
                 <div className="flex-between gap-4">
                     {product.rating} Stars

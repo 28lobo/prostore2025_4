@@ -4,9 +4,10 @@ import { getLatestProducts } from '@/lib/actions/product.actions';
 
 const HomePage = async () => {
   const latestProducts = await getLatestProducts()
+  const formattedProducts = latestProducts.map(product => ({ ...product, price: product.price.toString(), rating: product.rating.toString() }))
   
   return ( <>
-    <ProductList data={latestProducts} title="Newest Arrivals" limit={4} />
+    <ProductList data={formattedProducts} title="Newest Arrivals" limit={4} />
   </> );
 }
  

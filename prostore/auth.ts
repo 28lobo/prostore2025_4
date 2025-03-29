@@ -14,6 +14,8 @@ export const config = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  // Add your JWT secret here; ensure NEXTAUTH_SECRET is defined in your environment.
+  secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -24,19 +26,17 @@ export const config = {
       async authorize(credentials) {
         if (credentials === null) return null;
 
-        // find user in db
+        // Find user in DB
         const user = await prisma.user.findFirst({
-          where: {
-            email: credentials.email as string,
-          },
+          where: { email: credentials.email as string },
         });
-        // check if user exist and password matches
+
+        // Check if user exists and password matches
         if (user && user.password) {
           const isMatch = compareSync(
             credentials.password as string,
             user.password
           );
-          // if password is correct, return user
           if (isMatch) {
             return {
               id: user.id,
@@ -51,16 +51,14 @@ export const config = {
     }),
   ],
   callbacks: {
-    async session({session, user, trigger, token}: any) {
-        session.user.id = token.sub
-
-        // if there is an update, set user name
-        if(trigger === 'update'){
-            session.user.name = user.name;
-        }
-        return session
-    }
-  }
-}satisfies NextAuthConfig;
+    async session({ session, user, trigger, token }: any) {
+      session.user.id = token.sub;
+      if (trigger === "update") {
+        session.user.name = user.name;
+      }
+      return session;
+    },
+  },
+} satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);

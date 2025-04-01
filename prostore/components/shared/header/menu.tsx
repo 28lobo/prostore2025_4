@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { EllipsisVertical, ShoppingCart, User } from "lucide-react";
 import Link from "next/link"; // Ensure Next.js Link is imported correctly
+import UserButton from "./user-button";
 
 const Menu = () => {
   return (
@@ -18,11 +19,7 @@ const Menu = () => {
             <ShoppingCart />
           </Link>
         </Button>
-        <Button asChild variant="ghost">
-          <Link href="/sign-in">
-            <User /> Sign In
-          </Link>
-        </Button>
+        <UserButton />
       </nav>
 
       {/* Mobile Navigation */}
@@ -46,10 +43,7 @@ const Menu = () => {
             </Button>
 
             <Button asChild variant="ghost">
-              <Link href="/sign-in">
-                <User />
-                Sign In
-              </Link>
+             <UserButton />
             </Button>
           </SheetContent>
         </Sheet>

@@ -15,9 +15,11 @@ const UserButton = async () => {
     const session = await auth()
     if (!session) {
     return (
-      <Link href="/sign-in">
-        <UserIcon /> Sign In
-      </Link>
+      <Button asChild>
+        <Link href="/sign-in">
+            <UserIcon />Sign In
+        </Link>
+      </Button>
     );
   }
   return <>User</>;

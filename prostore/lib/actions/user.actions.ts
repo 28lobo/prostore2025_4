@@ -29,36 +29,38 @@ export async function signOutUser(){
     await signOut()
 }
 
-// sign up user
-export async function signUpUser(prevState: unknown, formData: FormData){
+export async function signUpUser(prevState: unknown, formData: FormData) {
     try {
-        const user = signUpFormSchema.parse({
-            name: formData.get('name'),
-            email: formData.get('email'),
-            password: formData.get('password'),
-            confirmPassword: formData.get('confirmPassword'),
-            role: formData.get('role')
-        });
-        const plainPassword = user.password;
-
-        user.password = hashSync(user.password, 10);
-        await prisma.user.create({
-            data: {
-                name: user.name,
-                email: user.email,
-                password: user.password,
-                role: user.role
-            }
-        });
-        await signIn('credentials', {
-            email: user.email,
-            password: plainPassword
-        })
-        return {success: true, message: 'User created successfully'}
-    } catch (error) {
-        if(isRedirectError(error)){
-            throw error
+      const user = signUpFormSchema.parse({
+        name: String(formData.get('name')),
+        email: String(formData.get('email')),
+        password: String(formData.get('password')),
+        confirmPassword: String(formData.get('confirmPassword')),
+        role: String(formData.get('role'))
+      });
+      const plainPassword = user.password;
+  
+      // Hash the password before storing it in the database.
+      user.password = hashSync(user.password, 10);
+      await prisma.user.create({
+        data: {
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          role: user.role
         }
-        return {success: false, message: 'Invalid email of password'}
+      });
+      // After creating the user, sign them in using the plain password.
+      await signIn('credentials', {
+        email: user.email,
+        password: plainPassword
+      });
+      return { success: true, message: 'User created successfully' };
+    } catch (error) {
+      if (isRedirectError(error)) {
+        throw error;
+      }
+      return { success: false, message: 'Invalid email or password' };
     }
-}
+  }
+  

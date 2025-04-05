@@ -5,7 +5,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { EllipsisVertical, ShoppingCart, User } from "lucide-react";
+import { EllipsisVertical, ShoppingCart} from "lucide-react";
 import Link from "next/link"; // Ensure Next.js Link is imported correctly
 import UserButton from "./user-button";
 

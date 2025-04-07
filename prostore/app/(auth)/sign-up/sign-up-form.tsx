@@ -37,7 +37,6 @@ const SignUpForm = () => {
             id="name"
             name="name"
             type="text"
-            required
             autoComplete="name"
             defaultValue={signUpDefaultValues.name}
           />
@@ -47,8 +46,8 @@ const SignUpForm = () => {
           <Input
             id="email"
             name="email"
-            type="email"
-            required
+            type="text"
+            
             autoComplete="email"
             defaultValue={signUpDefaultValues.email}
           />
@@ -80,7 +79,7 @@ const SignUpForm = () => {
         </div>
         {data && !data.success && (
             <div className="text-sm text-center text-destructive">
-                {data.message}
+                {typeof data.message === "function" ? data.message({}) : data.message}
             </div>
         )}
         <div className="text-sm text-center text-muted-foreground">

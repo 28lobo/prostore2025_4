@@ -5,6 +5,7 @@ import {signIn, signOut} from "@/auth"
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {hashSync} from 'bcrypt-ts-edge'
 import { prisma } from '@/db/prisma'
+import { formatError } from "../utils";
 
 
 // Sign in user with credentials
@@ -29,6 +30,7 @@ export async function signOutUser(){
     await signOut()
 }
 
+// sign up user 
 export async function signUpUser(prevState: unknown, formData: FormData) {
     try {
       const user = signUpFormSchema.parse({
@@ -57,10 +59,11 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       });
       return { success: true, message: 'User created successfully' };
     } catch (error) {
+      
       if (isRedirectError(error)) {
         throw error;
       }
-      return { success: false, message: 'Invalid email or password' };
+      return { success: false, message: formatError(error) };
     }
   }
   

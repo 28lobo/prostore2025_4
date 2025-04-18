@@ -31,7 +31,7 @@ export async function signOutUser(){
 }
 
 // sign up user 
-export async function signUpUser(prevState: unknown, formData: FormData) {
+export async function signUpUser(prevState: unknown, formData: FormData) { 
     try {
       const user = signUpFormSchema.parse({
         name: String(formData.get('name')),

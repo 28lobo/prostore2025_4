@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from "@/lib/constants";
+import { SessionProvider } from "next-auth/react";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -24,8 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        {children}
-
+        <SessionProvider>{children}</SessionProvider>
         <Toaster />
       </body>
     </html>

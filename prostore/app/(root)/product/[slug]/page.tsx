@@ -69,7 +69,7 @@ const ProductDetailsPage = async (props: {
                 </div>
                 {product.stock > 0 && (
                  <div className="flex-center">
-                    <AddToCart cart={cart} item={{
+                    <AddToCart cart={cart ? { ...cart, sessionCartId: cart.sessionCartId ?? "" } : cart} item={{
                       slug: product.slug,
                       productId: product.id,
                       name: product.name,

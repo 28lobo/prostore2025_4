@@ -66,4 +66,19 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       return { success: false, message: formatError(error) };
     }
   }
+
+  // get a user by id
+  export async function getUserById(id: string) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: id
+        }
+      });
+      return user;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      throw new Error('Failed to fetch user');
+    }
+  }
   

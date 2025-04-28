@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 // get user's payment methods
 import { getUserById } from "@/lib/actions/user.actions";
 import PaymentMethodForm from "./payment-method-form";
+import CheckoutSteps from "@/components/shared/checkout-steps";
 
 export const metadata: Metadata = {
     title: "Select Payment Method",
@@ -18,7 +19,8 @@ const PaymentMethodPage = async() => {
     if(!userId) throw new Error("User not found");
     const user = await getUserById(userId);
     return ( <>
-        <PaymentMethodForm preferredPaymentMethod={user?.paymmentMethod} />
+        <CheckoutSteps current={2}  />
+        <PaymentMethodForm preferredPaymentMethod={user?.paymmentMethod ?? null} />
     </> );
 }
  

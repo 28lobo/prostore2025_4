@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const CheckoutSteps = ({ current = 0 }) => {
     return (
         // Removed space-y-2, added items-center and md:flex-nowrap
-        <div className="flex flex-col md:flex-row md:flex-nowrap items-center justify-start md:justify-between space-x-0 md:space-x-2 space-y-2 md:space-y-0 mb-10 w-full">
+        <div className="flex flex-col md:flex-row md:flex-nowrap items-center justify-start md:justify-between space-x-0 md:space-x-2 space-y-2 md:space-y-0 mt-10 mb-10 w-full">
             {["User Login", "Shipping Address", "Payment Method", "Place Order"].map((step, index) => (
                 <React.Fragment key={step}>
                     {/* Consider reducing w-56 if space is tight */}

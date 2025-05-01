@@ -29,7 +29,7 @@ model Product {
   isFeatured Boolean @default(false)
   banner String?
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  orderItem orderItem[] 
+  orderItem OrderItem[] 
 
 }
 
@@ -123,11 +123,11 @@ model Order {
   deliveredAt DateTime? @db.Timestamp(6)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItem orderItem[]
+  orderItems OrderItem[]
  
 }
 
-model orderItem {
+model OrderItem {
   orderId String @db.Uuid
   productId String @db.Uuid
   qty Int

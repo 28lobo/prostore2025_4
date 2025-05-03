@@ -12,7 +12,7 @@ async function generateAccessToken () {
     const {PAYPAL_CLIENT_ID, PAYPAL_APP_SECRET} = process.env;
     // Put client id and secret in base64
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_APP_SECRET}`).toString("base64");
-    // send the request in header
+    // send the request in header to get the data from paypal
     const response = await fetch(`${base}/v1/oauth2/token`, {
         method: "POST",
         body: "grant_type=client_credentials",
@@ -32,4 +32,4 @@ async function generateAccessToken () {
     }
 }
 
-generateAccessToken()
+export {generateAccessToken}

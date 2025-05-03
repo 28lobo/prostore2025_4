@@ -2,7 +2,40 @@
 const base = process.env.PAYPAY_API_URL || "https://api-m.sandbox.paypal.com";
 
 // create paypal order and capture payment
-export const paypal = {}
+export const paypal = {
+    createOrder: async function createOrder(price: number){
+        const accessToken = await generateAccessToken();
+        const url = `${base}/v2/checkout/orders`;
+        // get the response
+        const response = await fetch(url, {
+            method: "Post",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                intent: "CAPTURE",
+                purchase_units: [{
+                    currency_code: 'USD',
+                    value: price
+                }]
+            })
+        });
+        return handleResponse(response);
+    },
+    capturePayment: async function capturePayment(orderId: string){
+        const accessToken = await generateAccessToken();
+        const url = `${base}/v2/checkout/orders/${orderId}/capture`;
+        const response = await fetch(url, {
+            method: "Post",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        return handleResponse(response);
+    }
+}
 
 
 // generate paypal access token
@@ -22,12 +55,18 @@ async function generateAccessToken () {
         },
     });
     // check if response is true
-    if(response.ok){
-        const jsonData = await response.json();
+    
+        const jsonData = await handleResponse(response);
         return jsonData.access_token;
     
+   
+}
+
+async function handleResponse(response: Response){
+    if(response.ok){
+        return response.json();
     }else {
-        const errorMessage = await response.text()
+        const errorMessage = await response.text();
         throw new Error(errorMessage);
     }
 }

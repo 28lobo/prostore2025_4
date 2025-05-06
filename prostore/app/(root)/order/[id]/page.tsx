@@ -26,7 +26,7 @@ const OrderDetailsPage = async (props: {
             shippingAddress: order.shippingAddress as ShippingAddress,
             paymentMethod: order.paymentMethod ?? "",
             updatedAt: order.createdAt ?? new Date()
-        }} />
+        }} paypalClientId={process.env.PAYPAL_CLIENT_ID || 'sb'} />
      );
 }
  

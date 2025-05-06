@@ -1,41 +1,57 @@
-// gets the paypal sandbox
-const base = process.env.PAYPAY_API_URL || "https://api-m.sandbox.paypal.com";
+// gets the PayPal sandbox (or live) base URL
+const base = process.env.PAYPAL_API_URL || "https://api-m.sandbox.paypal.com";
 
-// create paypal order and capture payment
 export const paypal = {
-    createOrder: async function createOrder(price: number){
-        const accessToken = await generateAccessToken();
-        const url = `${base}/v2/checkout/orders`;
-        // get the response
-        const response = await fetch(url, {
-            method: "Post",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({
-                intent: "CAPTURE",
-                purchase_units: [{
-                    currency_code: 'USD',
-                    value: price
-                }]
-            })
-        });
-        return handleResponse(response);
-    },
-    capturePayment: async function capturePayment(orderId: string){
-        const accessToken = await generateAccessToken();
-        const url = `${base}/v2/checkout/orders/${orderId}/capture`;
-        const response = await fetch(url, {
-            method: "Post",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-        return handleResponse(response);
-    }
-}
+  createOrder: async function createOrder(price: number) {
+    const accessToken = await generateAccessToken();
+    const url = `${base}/v2/checkout/orders`;
+
+    // build the correct payload
+    const body = JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "USD",
+            // PayPal requires a string with 2 decimal places
+            value: price.toFixed(2),
+          },
+        },
+      ],
+    });
+
+    console.log("Creating PayPal order with payload:", body);
+
+    const response = await fetch(url, {
+      method: "POST",  // uppercase is conventional
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body,
+    });
+
+    return handleResponse(response);
+  },
+
+  capturePayment: async function capturePayment(orderId: string) {
+    const accessToken = await generateAccessToken();
+    const url = `${base}/v2/checkout/orders/${orderId}/capture`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return handleResponse(response);
+  },
+};
+
+// …generateAccessToken() and handleResponse() stay the same…
+
 
 
 // generate paypal access token

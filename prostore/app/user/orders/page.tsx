@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import Pagination from "@/components/shared/pagination";
 
 // metadata
 export const metadata: Metadata = {
@@ -46,21 +47,32 @@ const OrdersPage = async (props: {
             {orders.data.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>{formatId(order.id)}</TableCell>
-                <TableCell>{formatDateTime(order.createdAt).dateTime}</TableCell>
-                <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
-                <TableCell>{order.isPaid && order.paidAt ? formatDateTime(order.paidAt).dateTime : 'Not Paid'}</TableCell>
-                <TableCell>{order.isDelivered && order.deliveredAt ? formatDateTime(order.deliveredAt).dateTime : 'Not delivered'}</TableCell>
                 <TableCell>
-                    <Link href={`/order/${order.id}`}>
-                        <span className="px-2">
-                            Details
-                        </span>
-                    </Link>
+                  {formatDateTime(order.createdAt).dateTime}
+                </TableCell>
+                <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
+                <TableCell>
+                  {order.isPaid && order.paidAt
+                    ? formatDateTime(order.paidAt).dateTime
+                    : "Not Paid"}
+                </TableCell>
+                <TableCell>
+                  {order.isDelivered && order.deliveredAt
+                    ? formatDateTime(order.deliveredAt).dateTime
+                    : "Not delivered"}
+                </TableCell>
+                <TableCell>
+                  <Link href={`/order/${order.id}`}>
+                    <span className="px-2">Details</span>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        {orders.totalPages > 1 && (
+          <Pagination page={Number(page) || 1} totalPages={orders.totalPages} />
+        )}
       </div>
     </div>
   );

@@ -99,6 +99,12 @@ export const authConfig: NextAuthConfig = {
           } catch (error) { console.error("Error merging cart in JWT:", error); }
         }
       }
+      // handle session updates
+      // if(session?.user.name && trigger === 'update'){
+      //   token.name = session.user.name
+  
+      // }
+
       return token;
     },
     authorized({ request, auth }: { request: NextRequest; auth: Session | null }) {

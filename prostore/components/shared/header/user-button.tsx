@@ -51,15 +51,22 @@ const UserButton = () => {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuItem>
-            <Link href='/users/profile' className="w-full">
+            <Link href="/users/profile" className="w-full">
               User Profile
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link href='/users/order' className="w-full">
+            <Link href="/users/order" className="w-full">
               Order History
             </Link>
           </DropdownMenuItem>
+          {session?.user?.role === 'admin' && (
+            <DropdownMenuItem>
+              <Link href="/admin/overview" className="w-full">
+                Admin
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem className="p-0 mb-1">
             <form action="/api/auth/signout" method="POST" className="w-full">
               <Button

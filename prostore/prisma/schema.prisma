@@ -42,7 +42,7 @@ model User {
   emailVerified DateTime?       @db.Timestamp(6)
   image         String?
   password      String?
-  role          String          @default("user") // "user" | "admin"
+  role          String          @default("user")  //"user" | "admin"
   address       Json?            @db.Json       
   paymmentMethod String?          // "paypal" | "stripe" | "braintree"  
   createdAt DateTime @default(now())@db.Timestamp(6)

@@ -3,14 +3,16 @@ import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compareSync } from "bcrypt-ts-edge";
+import bcrypt from "bcryptjs";
 import type { NextAuthConfig, Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from 'next/headers';
 import type { JWT } from "@auth/core/jwt";
 import type { AdapterUser } from "@auth/core/adapters";
 
-const prismaClientSingleton = () => {
+
+
+const prismaClientSingleton = () => { 
   return new PrismaClient();
 };
 
@@ -42,22 +44,27 @@ export const authConfig: NextAuthConfig = {
         password: { type: "password" },
       },
       async authorize(credentials): Promise<AdapterUser | null> {
-        if (credentials === null || !credentials.email || !credentials.password ) return null;
-        const user = await prisma.user.findFirst({
-          where: { email: credentials.email as string },
-        });
-        if (user && user.password) {
-          const isMatch = compareSync(credentials.password as string, user.password);
-          if (isMatch) {
-            return {
-              id: user.id, name: user.name, email: user.email!,
-              emailVerified: user.emailVerified, image: user.image,
-              role: user.role,
-            };
-          }
-        }
-        return null;
-      },
+  if (!credentials?.email || !credentials?.password) return null;
+
+  const user = await prisma.user.findFirst({
+    where: { email: credentials.email },
+  });
+
+  if (!user?.password) return null;
+
+ const isMatch = await bcrypt.compare(credentials.password as string, user.password);
+
+  if (!isMatch) return null;
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email!,
+    emailVerified: user.emailVerified,
+    image: user.image,
+    role: user.role,
+  } as CustomUser;
+}
     }),
   ],
   callbacks: {

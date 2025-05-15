@@ -6,14 +6,9 @@ import ws from 'ws';
 // Sets up WebSocket connections for Neon.
 neonConfig.webSocketConstructor = ws;
 const connectionString = `${process.env.DATABASE_URL}`;
-
-// Creates a new connection pool using the provided connection string.
 const pool = new Pool({ connectionString });
-
-// Instantiates the Prisma adapter using the Neon connection pool.
 const adapter = new PrismaNeon(pool);
 
-// Define a type for product data matching your Prisma schema.
 type ProductData = {
   price: Prisma.Decimal;
   rating: Prisma.Decimal;
@@ -35,71 +30,74 @@ export const prisma = new PrismaClient({ adapter }).$extends({
   result: {
     product: {
       price: {
-        compute(product: ProductData): string {
+        needs: { price: true },
+        compute(product: ProductData) {
           return product.price.toString();
         },
       },
       rating: {
-        compute(product: ProductData): string {
+        needs: { rating: true },
+        compute(product: ProductData) {
           return product.rating.toString();
         },
       },
     },
     cart: {
       itemsPrice: {
-        needs: {},
-        compute(cart: { itemsPrice: Prisma.Decimal }): string {
+        needs: { itemsPrice: true },
+        compute(cart: { itemsPrice: Prisma.Decimal }) {
           return cart.itemsPrice.toString();
         },
       },
       shippingPrice: {
-        needs: {},
-        compute(cart: { shippingPrice: Prisma.Decimal }): string {
+        needs: { shippingPrice: true },
+        compute(cart: { shippingPrice: Prisma.Decimal }) {
           return cart.shippingPrice.toString();
         },
       },
       taxPrice: {
-        needs: {},
-        compute(cart: { taxPrice: Prisma.Decimal }): string {
+        needs: { taxPrice: true },
+        compute(cart: { taxPrice: Prisma.Decimal }) {
           return cart.taxPrice.toString();
         },
       },
       totalPrice: {
-        needs: {},
-        compute(cart: { totalPrice: Prisma.Decimal }): string {
+        needs: { totalPrice: true },
+        compute(cart: { totalPrice: Prisma.Decimal }) {
           return cart.totalPrice.toString();
         },
       },
     },
     order: {
       itemsPrice: {
-        needs: {},
-        compute(order: { itemsPrice: Prisma.Decimal }): string {
+        needs: { itemsPrice: true },
+        compute(order: { itemsPrice: Prisma.Decimal }) {
           return order.itemsPrice.toString();
         },
       },
       shippingPrice: {
-        needs: {},
-        compute(order: { shippingPrice: Prisma.Decimal }): string {
+        needs: { shippingPrice: true },
+        compute(order: { shippingPrice: Prisma.Decimal }) {
           return order.shippingPrice.toString();
         },
       },
       taxPrice: {
-        needs: {},
-        compute(order: { taxPrice: Prisma.Decimal }): string {
+        needs: { taxPrice: true },
+        compute(order: { taxPrice: Prisma.Decimal }) {
           return order.taxPrice.toString();
         },
       },
       totalPrice: {
-        needs: {},
-        compute(order: { totalPrice: Prisma.Decimal }): string {
+        needs: { totalPrice: true },
+        compute(order: { totalPrice: Prisma.Decimal }) {
           return order.totalPrice.toString();
         },
       },
     },
     orderItem: {
       price: {
-        compute(orderItem: { price: Prisma.Decimal }): string {
+        needs: { price: true },
+        compute(orderItem: { price: Prisma.Decimal }) {
           return orderItem.price.toString();
         },
       },

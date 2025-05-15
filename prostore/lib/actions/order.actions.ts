@@ -8,9 +8,9 @@ import { getUserById } from "./user.actions";
 import { insertOrderSchema } from "../validators";
 import { prisma } from "@/db/prisma";
 import type { CartItem, PaymentResult } from "@/types";
-import { paypal } from "../paypal"
-import { revalidatePath } from "next/cache"; 
-import { PAGE_SIZE} from '../constants'
+import { paypal } from "../paypal";
+import { revalidatePath } from "next/cache";
+import { PAGE_SIZE } from "../constants";
 import { Prisma } from "@prisma/client";
 
 // Create an order and the order items
@@ -21,7 +21,7 @@ export async function createOrder() {
     // need cart items
     const cart = await getMyCart();
     // user id
-    const userId = session?.user?.id; 
+    const userId = session?.user?.id;
     // check if there is a userid
     if (!userId) throw new Error("User not found");
     // get user from database using the user id from the session. This gives us the address, payment, etc
@@ -58,40 +58,43 @@ export async function createOrder() {
       shippingPrice: cart.shippingPrice,
       taxPrice: cart.taxPrice,
       totalPrice: cart.totalPrice,
-
     });
 
     // Create a transacttion that creates an order and the order items
     const insertedOrderId = await prisma.$transaction(async (tx) => {
-        // create order
-        const insertedOrder = await tx.order.create({ data: order });
-        // create order items from the cart items
-        for (const item of cart.items as CartItem[]){
-            await tx.orderItem.create({
-                data: {
-                    ...item,
-                    price: item.price,
-                    orderId: insertedOrder.id
-                },
-            });
-        }
-        // clear the cart
-        await tx.cart.update({
-            where: {
-                id: cart.id,
-            },
-            data: {
-                items: [],
-                totalPrice: 0,
-                taxPrice: 0,
-                shippingPrice: 0,
-                itemsPrice: 0,  
-            },
+      // create order
+      const insertedOrder = await tx.order.create({ data: order });
+      // create order items from the cart items
+      for (const item of cart.items as CartItem[]) {
+        await tx.orderItem.create({
+          data: {
+            ...item,
+            price: item.price,
+            orderId: insertedOrder.id,
+          },
         });
-        return insertedOrder.id
-    })
-    if(!insertedOrderId) throw new Error("Failed to create order");
-    return { success: true, message: "Order created successfully", redirectTo: `/order/${insertedOrderId}`};
+      }
+      // clear the cart
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: [],
+          totalPrice: 0,
+          taxPrice: 0,
+          shippingPrice: 0,
+          itemsPrice: 0,
+        },
+      });
+      return insertedOrder.id;
+    });
+    if (!insertedOrderId) throw new Error("Failed to create order");
+    return {
+      success: true,
+      message: "Order created successfully",
+      redirectTo: `/order/${insertedOrderId}`,
+    };
   } catch (error) {
     if (isRedirectError(error)) throw error;
     return { success: false, message: formatError(error) };
@@ -102,176 +105,184 @@ export async function createOrder() {
 export async function getOrderById(orderId: string) {
   const data = await prisma.order.findFirst({
     where: {
-      id: orderId
+      id: orderId,
     },
     include: {
-        orderItems: true,
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
+      orderItems: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
         },
       },
+    },
   });
-  return convertToPlainObject(data)
+  return convertToPlainObject(data);
 }
 
 // Create a new PayPal Order
 export async function createPayPalOrder(orderId: string) {
-  try{
+  try {
     // Get order from the database
     const order = await prisma.order.findFirst({
       where: {
-        id: orderId
-      
-      }
+        id: orderId,
+      },
     });
-    if(order){
+    if (order) {
       // Create a PayPal order
       const paypalOrder = await paypal.createOrder(Number(order.totalPrice));
 
       // update the order with the paypal order id
       await prisma.order.update({
         where: {
-          id: orderId
+          id: orderId,
         },
         data: {
-          paymentResult:{
+          paymentResult: {
             id: paypalOrder.id,
-            email_address: '',
-            status: '',
-            pricePaid: 0
-          }
-        }
+            email_address: "",
+            status: "",
+            pricePaid: 0,
+          },
+        },
       });
-      return {success: true, message: "Item order created successfully", data: paypalOrder.id}
-
-    }else {
+      return {
+        success: true,
+        message: "Item order created successfully",
+        data: paypalOrder.id,
+      };
+    } else {
       throw new Error("Order not found");
     }
-  }catch(error){
+  } catch (error) {
     return { success: false, message: formatError(error) };
   }
- }
+}
 // orderID is the paypal order id
- export async function approvePayPalOrder (orderId: string, data: {orderID: string}){
+export async function approvePayPalOrder(
+  orderId: string,
+  data: { orderID: string }
+) {
   try {
     // Get order from the database
     const order = await prisma.order.findFirst({
       where: {
-        id: orderId
-      }
+        id: orderId,
+      },
     });
 
-    if(!order) throw new Error("Order not found");
+    if (!order) throw new Error("Order not found");
 
     // call capture payment to return data to us
     const captureData = await paypal.capturePayment(data.orderID);
-    if(!captureData || captureData.id !== (order.paymentResult as PaymentResult)?.id || 
-  captureData.status !== 'COMPLETED'){
-    throw new Error('Error in PayPal payment')
-  }
+    if (
+      !captureData ||
+      captureData.id !== (order.paymentResult as PaymentResult)?.id ||
+      captureData.status !== "COMPLETED"
+    ) {
+      throw new Error("Error in PayPal payment");
+    }
 
-  // update order to paid. isPaid and paidAt. this is a non-export function
-  await updateOrderToPaid({orderId, paymentResult:{
-    id: captureData.id,
-    status: captureData.status,
-    email_address: captureData.payer.email_address,
-    pricePaid: captureData.purchase_units[0]?.payments?.captures[0]?.amount?.value
-  }});
+    // update order to paid. isPaid and paidAt. this is a non-export function
+    await updateOrderToPaid({
+      orderId,
+      paymentResult: {
+        id: captureData.id,
+        status: captureData.status,
+        email_address: captureData.payer.email_address,
+        pricePaid:
+          captureData.purchase_units[0]?.payments?.captures[0]?.amount?.value,
+      },
+    });
 
-  revalidatePath(`/order/${orderId}`);
+    revalidatePath(`/order/${orderId}`);
 
-  return {
-    success: true,
-    message: "Order paid successfully"
-  }
-
-  }catch(error){
+    return {
+      success: true,
+      message: "Order paid successfully",
+    };
+  } catch (error) {
     return { success: false, message: formatError(error) };
-  
   }
- }
+}
 
- async function updateOrderToPaid({
+async function updateOrderToPaid({
   orderId,
   paymentResult,
- }: {
+}: {
   orderId: string;
   paymentResult?: PaymentResult;
- }){
+}) {
   // Get order from the database
   const order = await prisma.order.findFirst({
     where: {
-      id: orderId
+      id: orderId,
     },
     include: {
-      orderItems: true
-    }
+      orderItems: true,
+    },
   });
-  if(!order) throw new Error("Order not found");
-  if(order.isPaid) throw new Error('Order is already paid')
+  if (!order) throw new Error("Order not found");
+  if (order.isPaid) throw new Error("Order is already paid");
 
   // Transaction to update order and account for product stock
   await prisma.$transaction(async (tx) => {
     // Iterate over products and update stock
-    for (const item of order.orderItems){
+    for (const item of order.orderItems) {
       await tx.product.update({
         where: {
-          id: item.productId
+          id: item.productId,
         },
         data: {
           stock: {
-            increment: --item.qty
-          }
-        }
-      })
+            increment: --item.qty,
+          },
+        },
+      });
     }
     // Set the order to paid
     await tx.order.update({
-      where: {id: orderId },
+      where: { id: orderId },
       data: {
         isPaid: true,
         paidAt: new Date(),
-        paymentResult: paymentResult
-      }
-    })
+        paymentResult: paymentResult,
+      },
+    });
   });
   // Get updated order after transaction
   const updatedOrder = await prisma.order.findFirst({
     where: {
-      id: orderId
+      id: orderId,
     },
     include: {
       orderItems: true,
-      user: { select: {name: true, email: true}}
-    }
+      user: { select: { name: true, email: true } },
+    },
   });
-  if(!updatedOrder) throw new Error("Failed to update order");
- }
-
-
+  if (!updatedOrder) throw new Error("Failed to update order");
+}
 
 //  Get the user's orders
 export async function getMyOrders({
   limit = PAGE_SIZE,
-  page
+  page,
 }: {
   limit?: number;
-  page: number
-}){
+  page: number;
+}) {
   // use session to get the orders
-  const session = await auth(); 
-  if(!session) throw new Error("User not authorized");
+  const session = await auth();
+  if (!session) throw new Error("User not authorized");
 
   // find all of the orders
   const data = await prisma.order.findMany({
     where: {
-      userId: session?.user?.id
+      userId: session?.user?.id,
     },
     orderBy: {
-      createdAt: 'desc'
+      createdAt: "desc",
     },
     take: limit,
     skip: (page - 1) * limit,
@@ -280,13 +291,13 @@ export async function getMyOrders({
   // get the count
   const dataCount = await prisma.order.count({
     where: {
-      userId: session?.user?.id
-    }
+      userId: session?.user?.id,
+    },
   });
   return {
     data,
-    totalPages: Math.ceil(dataCount / limit)
-  }
+    totalPages: Math.ceil(dataCount / limit),
+  };
 }
 
 type SalesDataType = {
@@ -295,44 +306,53 @@ type SalesDataType = {
 }[];
 
 // Get sales data and order summary
-export async function getOrderSummary(){
+export async function getOrderSummary() {
   // get counts for products, orders, and users
-  const ordersCount = await prisma.order.count()
-  const productsCount = await prisma.product.count()
-  const usersCount = await prisma.user.count()
+  const ordersCount = await prisma.order.count();
+  const productsCount = await prisma.product.count();
+  const usersCount = await prisma.user.count();
+
   // calculate total sales
   const totalSales = await prisma.order.aggregate({
     _sum: {
-      totalPrice: true
-    }
-  })
+      totalPrice: true,
+    },
+  });
+
   // calculate monthly sales. write a raw sql query
-  const salesDataRaw = await prisma.$queryRaw<Array<{month: string; totalSales:Prisma.Decimal}>>`
-    SELECT to_char("createdAt", 'MM/YY') as 'month', sum("totalPrice") as 'totalSales'
+  const salesDataRaw = await prisma.$queryRaw<
+    Array<{ month: string; totalSales: Prisma.Decimal }>
+  >`
+    SELECT
+      to_char("createdAt", 'MM/YY') AS month,
+      SUM("totalPrice")           AS totalSales
     FROM "Order"
-    GROUP BY to_char("createdAt", "MM/YY")
-  `
-  const salesData:SalesDataType = salesDataRaw.map((entry) => ({
+    GROUP BY to_char("createdAt", 'MM/YY')
+    ORDER BY to_char("createdAt", 'MM/YY');
+  `;
+
+  const salesData: SalesDataType = salesDataRaw.map((entry) => ({
     month: entry.month,
-    totalSales: Number(entry.totalSales)
-  }))
+    totalSales: Number(entry.totalSales),
+  }));
+
   // get latest sales
   const latestSales = await prisma.order.findMany({
     orderBy: {
-      createdAt: 'desc'
+      createdAt: "desc",
     },
     include: {
-      user: {select: {name: true}}
+      user: { select: { name: true } },
     },
     take: 6,
   });
+
   return {
     ordersCount,
     productsCount,
     usersCount,
     totalSales,
     salesData,
-    latestSales
-  }
-
+    latestSales,
+  };
 }

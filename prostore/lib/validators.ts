@@ -21,6 +21,11 @@ export const insertProductSchema = z.object({
   price: currency
 });
 
+// Schema for updating products. update product schema is the same as insert product schema, but with the id field.
+export const updateProductSchema = insertProductSchema.extend({
+  id: z.string().min(1, "ID is required"),
+})
+
 
 // Sign in  schema
 export const signInFormSchema = z.object({

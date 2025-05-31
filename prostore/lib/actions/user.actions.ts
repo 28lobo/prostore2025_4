@@ -1,6 +1,6 @@
 'use server';
 
-import { shippingAddressSchema, signInFormSchema, signUpFormSchema, paymentMethodSchema } from "../validators";
+import { shippingAddressSchema, signInFormSchema, signUpFormSchema, paymentMethodSchema, updateUserSchema } from "../validators";
 import { z } from "zod";
 import {auth,signIn, signOut} from "@/auth"
 import { isRedirectError } from "next/dist/client/components/redirect-error";
@@ -209,6 +209,27 @@ export async function deleteUser(id: string) {
     return {success: true, message: 'User deleted successfully'}
   }catch(error){
     return {success: false, message: formatError(error)}
+  }
+}
+
+// updater user 
+export async function updateUser(user: z.infer<typeof updateUserSchema>) {
+  try {
+    await prisma.user.update({
+      where: {
+        id: user.id
+      },
+      data: {
+        name: user.name,
+        role: user.role
+      }
+    })
+    revalidatePath('/admin/user')
+
+    return {success: true, message: 'User updated successfully'}
+  } catch (error) {
+    return {success: false, message: formatError(error)}
+    
   }
 }
   

@@ -18,17 +18,44 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectTrigger, SelectItem, SelectValue } from "@/components/ui/select";
 import { USER_ROLES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { updateUser } from "@/lib/actions/user.actions";
+import { useRouter } from "next/navigation";
 
 const UpdateUserForm = ({ user }: {
   user: z.infer<typeof updateUserSchema>
 }) => {
+
+  const router = useRouter();
   const form = useForm<z.infer<typeof updateUserSchema>>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: user,
   });
 
-  const onSubmit = () => {
-    return;
+  const onSubmit = async(values: z.infer<typeof updateUserSchema>) => {
+    try {
+      // implement the update user logic here
+      const res = await updateUser({
+        ...values,
+        id: user.id
+      }); 
+
+      if(!res.success){
+        toast.error(res.message);
+      }else {
+        toast.success("User updated successfully");
+      }
+      form.reset();
+      router.push('/admin/user');
+      
+    } catch (error) {
+      if(error instanceof Error) {
+        toast.error(error.message);
+      }
+      else {
+        toast.error("Failed to update user");
+      }
+    }
   };
 
   return (

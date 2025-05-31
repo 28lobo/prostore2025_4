@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { insertProductSchema, updateProductSchema } from "../validators";
 import { z } from "zod";
 
+
+
 // create a function that fetches the latest products in the form of a prisma object. convert to a js object.
 export async function getLatestProducts() {
     
@@ -38,29 +40,57 @@ export async function getProductById(productId: string) {
     return convertToPlainObject(data);
 }
 
+export type GetAllProductsParams = {
+  limit?: number;
+  page: number;
+  query?: string;
+  category?: string;
+};
 
 
 // Get all products
 export async function getAllProducts({
-    // removed query and category from the parameters.
-    limit = PAGE_SIZE,
-    page,
-    
-}: {
-    limit?: number;
-    page: number;
-    
-}) {
-    const data = await prisma.product.findMany({
-        orderBy: { createdAt: 'desc'},
-        skip: (page - 1) * limit,
-        take: limit,
-    });
-    const dataCount = await prisma.product.count();
-    return{
-        data,
-        totalPages: Math.ceil(dataCount / limit),
-    }
+  limit = PAGE_SIZE,
+  page,
+  query,
+  category,
+}: GetAllProductsParams) {
+  // 1. Build a dynamic `where` object based on query/category:
+  const whereClause: { name?: { contains: string; mode: "insensitive" }, category?: string } = {};
+
+  if (query && query.trim().length > 0) {
+    whereClause.name = {
+      contains: query.trim(),
+      mode: "insensitive",
+    };
+  }
+
+  if (category && category.trim().length > 0) {
+    whereClause.category = category.trim();
+  }
+
+  // 2. Calculate skip & take for pagination:
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  // 3. Run count() and findMany() in parallel, both using the same where clause:
+  const [totalCount, data] = await Promise.all([
+    prisma.product.count({ where: whereClause }),
+    prisma.product.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+  ]);
+
+  // 4. Compute totalPages and return:
+  const totalPages = Math.ceil(totalCount / limit);
+
+  return {
+    data,
+    totalPages,
+  };
 }
 
 // Delete a product

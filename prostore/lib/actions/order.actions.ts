@@ -373,7 +373,7 @@ export async function getAllOrders({
       name: {
         contains: query,
         mode: 'insensitive',
-      } as Prisma.StringFilter
+      } as Prisma.StringFilter 
     }
   }: {}
 

@@ -9,8 +9,8 @@ const AdminSearch = () => {
     // create a formActionUrl based on the current pathname to use in the search form
     const formActionUrl = pathname.includes('/admin/orders') 
     ? '/admin/orders' 
-    : pathname.includes('/admin/users') ?
-    '/admin/users' : '/admin/products'
+    : pathname.includes('/admin/user') ?
+    '/admin/user' : '/admin/products'
 
     const searchParams = useSearchParams();
     const [queryValue, setQueryValue] = useState(searchParams.get('query') || ''); 

@@ -5,6 +5,7 @@ import { LATEST_PRODUCTS_LIMIT, PAGE_SIZE } from "../constants";
 import { revalidatePath } from "next/cache";
 import { insertProductSchema, updateProductSchema } from "../validators";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 
 
@@ -80,12 +81,33 @@ export async function getAllProducts({
   // 2. Calculate skip & take for pagination:
   const skip = (page - 1) * limit;
   const take = limit;
+  // Query filter 
+  const queryFilter: Prisma.ProductWhereInput = query && query !== 'all' ? {
+    name: {
+        contains: query,
+        mode: 'insensitive'
+    } as Prisma.StringFilter
+  } : {};
+//   Category filter
+  const categoryFilter = category && category !== 'all' ? { category } : {};
+//   price filter
+  const priceFilter: Prisma.ProductWhereInput = price && price !== 'all' ? {
+    price: {
+        gte: Number(price.split('_')[0]),
+        lte: Number(price.split('_')[1]),
+    }
+   } : {};
+   const ratingFilter: Prisma.ProductWhereInput = rating && rating !== 'all' ? {
+    rating: {
+        gte: Number(rating)
+    }
+   } : {};
 
   // 3. Run count() and findMany() in parallel, both using the same where clause:
   const [totalCount, data] = await Promise.all([
     prisma.product.count({ where: whereClause }),
     prisma.product.findMany({
-      where: whereClause,
+      where: {...queryFilter, ...categoryFilter, ...priceFilter,...ratingFilter},
       orderBy: { createdAt: "desc" },
       skip,
       take,

@@ -45,18 +45,26 @@ export type GetAllProductsParams = {
   page: number;
   query?: string;
   category?: string;
+  price?: string;
+  rating?: string;
+  sort?: string;
 };
 
 
 // Get all products
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export async function getAllProducts({
   limit = PAGE_SIZE,
   page,
   query,
   category,
+  price,
+  rating,
+  sort,
 }: GetAllProductsParams) {
   // 1. Build a dynamic `where` object based on query/category:
-  const whereClause: { name?: { contains: string; mode: "insensitive" }, category?: string } = {};
+  const whereClause: { name?: { contains: string; mode: "insensitive" }; category?: string } = {};
 
   if (query && query.trim().length > 0) {
     whereClause.name = {
@@ -92,6 +100,7 @@ export async function getAllProducts({
     totalPages,
   };
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // Delete a product
 export async function deleteProduct(id: string) {
@@ -169,16 +178,16 @@ export async function getAllCategories() {
     return data;
 }
 
-// // get featured products
-// export async function getFeaturedProducts() {
-//     const data = await prisma.product.findMany({
-//         where: {
-//             isFeatured: true
-//         },
-//         orderBy: {
-//             createdAt: 'desc'
-//         },
-//         take: 4
-//     });
-//     return convertToPlainObject(data);
-// }
+// get featured products
+export async function getFeaturedProducts() {
+    const data = await prisma.product.findMany({
+        where: {
+            isFeatured: true
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        take: 4
+    });
+    return convertToPlainObject(data);
+}

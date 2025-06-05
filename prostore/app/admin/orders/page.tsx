@@ -53,9 +53,9 @@ const AdminOrdersPage = async (props: {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>DATE</TableHead>
-              <TableHead>BUYER</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>TOTAL</TableHead>
-              <TableHead>PAID</TableHead>
+              <TableHead>Buyer</TableHead>
               <TableHead>DELIVERED</TableHead>
               <TableHead>ACTIONS</TableHead>
             </TableRow>

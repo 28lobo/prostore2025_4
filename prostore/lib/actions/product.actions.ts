@@ -93,8 +93,8 @@ export async function getAllProducts({
 //   price filter
   const priceFilter: Prisma.ProductWhereInput = price && price !== 'all' ? {
     price: {
-        gte: Number(price.split('_')[0]),
-        lte: Number(price.split('_')[1]),
+        gte: Number(price.split('-')[0]),
+        lte: Number(price.split('-')[1]),
     }
    } : {};
    const ratingFilter: Prisma.ProductWhereInput = rating && rating !== 'all' ? {

@@ -108,7 +108,14 @@ export async function getAllProducts({
     prisma.product.count({ where: whereClause }),
     prisma.product.findMany({
       where: {...queryFilter, ...categoryFilter, ...priceFilter,...ratingFilter},
-      orderBy: { createdAt: "desc" },
+      orderBy: 
+        sort === 'lowest'
+        ? {price: 'asc'}
+        : sort === 'highest'
+        ? {price: 'desc'}
+        : sort === 'rating'
+        ? {rating: 'desc'}
+        : {createdAt: 'desc'},
       skip,
       take,
     }),

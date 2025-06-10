@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "@/components/ui/sonner"
-import { useForm } from "react-hook-form"
+import { SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { insertReviewSchema } from "@/lib/validators"
@@ -28,6 +28,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { StarIcon } from "lucide-react"
+import { createUpdateReview } from "@/lib/actions/review.actions"
+
 
 const ReviewForm = ({
   userId,
@@ -45,17 +47,23 @@ const ReviewForm = ({
     defaultValues: reviewFormDefaultValues
   })
 
+  // open form handler
   const handleOpenForm = () => {
+    form.setValue('productId', productId)
+    form.setValue('userId', userId)
     setOpen(true)
   }
-
-  const onSubmit = (data: z.infer<typeof insertReviewSchema>) => {
-    // Here you would call your API to submit the review
-    console.log({ ...data, userId, productId })
-    toast.success("Review submitted successfully.")
-    setOpen(false)
-    onReviewSubmitted()
-    form.reset()
+  // submit form handler
+  const onSubmit:SubmitHandler<z.infer<typeof insertReviewSchema>> = async (values) => {
+    const res = await createUpdateReview({...values, productId});
+    if (res.success) {
+      toast.success(res.message)
+      setOpen(false)
+      form.reset()
+      onReviewSubmitted()
+    } else {
+      toast.error(res.message)
+    }
   }
 
   return (

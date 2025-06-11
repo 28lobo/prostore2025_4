@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { StarIcon } from "lucide-react"
-import { createUpdateReview } from "@/lib/actions/review.actions"
+import { createUpdateReview, getMyReviewByProductId } from "@/lib/actions/review.actions"
 
 
 const ReviewForm = ({
@@ -48,11 +48,18 @@ const ReviewForm = ({
   })
 
   // open form handler
-  const handleOpenForm = () => {
+  const handleOpenForm = async () => {
     form.setValue('productId', productId)
     form.setValue('userId', userId)
+    const review = await getMyReviewByProductId({ productId, userId })
+    if(review) {
+      form.setValue('title', review.Title)
+      form.setValue('description', review.description)
+      form.setValue('rating', review.rating)
+    }
     setOpen(true)
   }
+  
   // submit form handler
   const onSubmit:SubmitHandler<z.infer<typeof insertReviewSchema>> = async (values) => {
     const res = await createUpdateReview({...values, productId});

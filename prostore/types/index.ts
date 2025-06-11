@@ -15,6 +15,7 @@ import {
 export type Product = z.infer<typeof insertProductSchema>&{
     id: string;
     rating: string;
+    numReviews: number;
     createdAt: Date;
 }
 
@@ -38,6 +39,8 @@ export type Order = z.infer<typeof insertOrderSchema> & {
 }
 
 export type PaymentResult = z.infer<typeof paymentResultSchema>
+
+
 // infering the fields from the schema?
 export type Review = z.infer<typeof insertReviewSchema> & {
     id: string;

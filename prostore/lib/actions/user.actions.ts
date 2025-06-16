@@ -11,6 +11,7 @@ import { ShippingAddress } from "@/types";
 import { PAGE_SIZE } from "../constants";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
+import { convertToPlainObject } from "../utils";
 
 
 // Sign in user with credentials
@@ -72,20 +73,30 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
     }
   }
 
-  // get a user by id
-  export async function getUserById(id: string) {
-    try {
-      const user = await prisma.user.findUnique({
-        where: {
-          id: id
-        }
-      });
-      return user;
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      throw new Error('Failed to fetch user');
-    }
+  // user.actions.ts
+
+
+// get user by id
+export async function getUserById(id: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        address: true,
+        paymentMethod: true,  // ← explicitly include this
+        // add any other fields you need downstream...
+      },
+    });
+    return convertToPlainObject(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    throw new Error("Failed to fetch user");
   }
+}
+
 
   // update user address
   export async function updateUserAddress(data: ShippingAddress) {
@@ -138,7 +149,7 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
           id: currentUser.id
         },
         data: {
-          paymmentMethod: paymentMethod.type
+          paymentMethod: paymentMethod.type
         }
       });
       return {success: true, message: 'Payment method updated successfully'}

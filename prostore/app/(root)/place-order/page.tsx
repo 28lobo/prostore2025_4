@@ -35,7 +35,7 @@ const PlaceOrderPage = async () => {
   const user = await getUserById(userId);
   if (!cart || cart.items.length === 0) redirect("/cart");
   if (!user || !user.address) redirect("/shipping-address");
-  if (!user.paymmentMethod) redirect("/payment-method");
+  if (!user.paymentMethod) redirect("/payment-method");
 
   const userAddress = user.address as ShippingAddress;
 
@@ -65,7 +65,7 @@ const PlaceOrderPage = async () => {
           <Card>
             <CardContent className="p-4 gap-4">
               <h2 className="text-xl pb-4">Payment Method</h2>
-              <p>{user.paymmentMethod}</p>
+              <p>{user.paymentMethod}</p>
 
               <div className="mt-3">
                 <Link href="/payment-method">

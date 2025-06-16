@@ -45,7 +45,7 @@ model User {
   password      String?
   role          String          @default("user")  //"user" | "admin"
   address       Json?            @db.Json       
-  paymmentMethod String?          // "paypal" | "stripe" | "braintree"  
+  paymentMethod String?          // "paypal" | "stripe" | "braintree"  
   createdAt DateTime @default(now())@db.Timestamp(6)
   updatedAt DateTime @updatedAt
   account   Account[]
@@ -114,6 +114,7 @@ model Order {
   userId String @db.Uuid
   shippingAddress Json? @db.Json
   paymentMethod String?
+  paymentIntentId String?   @unique
   paymentResult Json? @db.Json
   itemsPrice Decimal @db.Decimal(12,2)
   shippingPrice Decimal @db.Decimal(12,2)

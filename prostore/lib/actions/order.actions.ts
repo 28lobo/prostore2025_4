@@ -41,7 +41,7 @@ export async function createOrder() {
         redirectTo: "/shipping-address",
       };
     }
-    if (!user.paymmentMethod) {
+    if (!user.paymentMethod) {
       return {
         success: false,
         message: "No payment method",
@@ -53,7 +53,7 @@ export async function createOrder() {
     const order = insertOrderSchema.parse({
       userId: user.id,
       shippingAddress: user.address,
-      paymentMethod: user.paymmentMethod,
+      paymentMethod: user.paymentMethod,
       itemsPrice: cart.itemsPrice,
       shippingPrice: cart.shippingPrice,
       taxPrice: cart.taxPrice,
@@ -86,7 +86,7 @@ export async function createOrder() {
           shippingPrice: 0,
           itemsPrice: 0,
         },
-      });
+      }); 
       return insertedOrder.id;
     });
     if (!insertedOrderId) throw new Error("Failed to create order");
@@ -461,3 +461,21 @@ export async function deliverOrder(orderId: string){
     return { success: false, message: formatError(error) };
   }
 }
+
+// Add this new function to your order actions file
+export const updateOrderPaymentIntentId = async (
+  orderId: string,
+  paymentIntentId: string
+) => {
+  try {
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: { paymentIntentId: paymentIntentId },
+    });
+    if (!order) throw new Error('Order not found');
+    return { success: true };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, message: errorMessage };
+  }
+};

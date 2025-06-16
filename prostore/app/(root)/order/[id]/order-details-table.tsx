@@ -28,15 +28,18 @@ import {
 } from "@/lib/actions/order.actions";
 import { useTransition } from "react";
 import { toast } from "@/components/ui/sonner";
+import StripePayment from "./stripe-payment";
 
 const OrderDetailsTable = ({
   order,
   paypalClientId,
   isAdmin,
+  stripeClientSecret,
 }: {
   order: Order;
   paypalClientId: string;
   isAdmin: boolean;
+  stripeClientSecret?: string | null;
 }) => {
   // destructue information from order
   const {
@@ -103,8 +106,8 @@ const OrderDetailsTable = ({
       >
         {isPending ? "Loading..." : "Mark as Paid"}
       </Button>
-    )
-  }
+    );
+  };
   // Button to mark order as delivered
   const MarkAsDeliveredButton = () => {
     const [isPending, startTransition] = useTransition();
@@ -125,8 +128,8 @@ const OrderDetailsTable = ({
       >
         {isPending ? "Loading..." : "Mark as Delivered"}
       </Button>
-    )
-  }
+    );
+  };
 
   return (
     <>
@@ -237,17 +240,19 @@ const OrderDetailsTable = ({
                   </PayPalScriptProvider>
                 </div>
               )}
+              {/* stripe payment */}
+              {!isPaid && paymentMethod === "Stripe" && stripeClientSecret && (
+                <StripePayment
+                  priceInCents={Math.round(Number(totalPrice) * 100)}
+                  clientSecret={stripeClientSecret}
+                  orderId={order.id}
+                />
+              )}
               {/* Cash on delivery */}
-              {
-                isAdmin && !isPaid && paymentMethod === 'CashOnDelivery' && (
-                  <MarkAsPaidButton />
-                )
-              }
-              {
-                isAdmin && isPaid && !isDelivered && (
-                  <MarkAsDeliveredButton />
-                )
-              }
+              {isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                <MarkAsPaidButton />
+              )}
+              {isAdmin && isPaid && !isDelivered && <MarkAsDeliveredButton />}
             </CardContent>
           </Card>
         </div>
